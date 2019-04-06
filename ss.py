@@ -4,30 +4,6 @@ import collections
 from operator import itemgetter
 nlp = spacy.load('en')
 
-
-def ImportentSents(texts, num):
-	Main_text = texts[num]
-	texts.remove(Main_text)
-
-	ImportentSen = []
-	for sent in Main_text.sents: ## Sentences in the main text
-		
-		Sum_high = []
-		for text in texts: ## for all texts
-			a = sorted(text.sents, key = lambda x : sent.similarity(x), reverse = True)
-
-			Sum_high.append(sent.similarity(a[0])) ## Add the Highest Sim
-				
-		if(sum(Sum_high) / len(Sum_high) > 0.85): ## Check if the Sen is importent
-			ImportentSen.append(sent) ## Add the sen
-	return ImportentSen
-
-# def Sum_of_sums(texts):
-# 	best = []
-# 	for idx, val in enumerate(texts):
-#     	best.append(ImportentSents(texts, idx)) ## Different Main Texts
-
-
 def ss(texts):
 	dic = {}
 
@@ -45,12 +21,25 @@ def ss(texts):
 
 			dic[sent] = (sum(Sum_high) / len(Sum_high))
 
-	sorted_list = sorted(dic.items(), key = lambda kv: kv[1])
-	return collections.OrderedDict(sorted_list)
+	sorted_list = sorted(dic.items(), key = lambda kv: kv[1]) ## sort from low to high
+	sorted_dic = collections.OrderedDict(sorted_list) ## convert to dic
 
+	lis = []
+	
+	for k, v in sorted_dic.items(): ## filtering all the bad
+		if v > 0.85:
+			lis.append(k)
+
+	lis.reverse()
+
+	for v in lis: ## taking just the highest sims
+		for v2 in lis:
+			if v.similarity(v2) > 0.85 and lis.index(v) < lis.index(v2):
+				lis.remove(v2)
+
+	return lis ## return list of the importent sen
 
 			
-
 
     	
 
@@ -302,31 +291,29 @@ texts.append(text1)
 texts.append(text2)
 texts.append(text3)
 
-# best = []
-# best.append(ImportentSents(texts, 0))
-# best.append(ImportentSents(texts, 1))
-# best.append(ImportentSents(texts, 2))
 
+d = ss(texts)
 
 
 lis = []
-d = ss(texts)
-for k, v in d.items():
-	if v > 0.85:
-		lis.append(k)
+for text in d:
+	tok = [token.text for token in text if not token.is_stop and token.is_alpha] ## remove all but the good stuff
+	lis.extend(tok)
 
 
-com_lis = []
+dic = {}
 
-lis.reverse()
+for word in lis:
+	count = lis.count(word)
+	dic[word] = count
 
-for v in lis:
-	for v2 in lis:
-		if v.similarity(v2) > 0.85 and lis.index(v) < lis.index(v2):
-			lis.remove(v2)
+max_key = max(dic, key=dic.get)
+max_value = dic[max_key]
+
+for word in dic:
+	dic[word] = dic[word] / max_value
 
 
-for v in lis:
-	print(v)
-	print()
 
+
+print(dic)
