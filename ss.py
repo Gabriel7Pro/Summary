@@ -39,6 +39,51 @@ def ss(texts):
 
 	return lis ## return list of the importent sen
 
+
+def summary(texts):
+	d = ss(texts)
+
+	lis = []
+	for text in d:
+		tok = [token.text for token in text if not token.is_stop and token.is_alpha] ## remove all but the good stuff
+		lis.extend(tok)
+
+
+	dic = {}
+
+	for word in lis:
+		count = lis.count(word)
+		dic[word] = count
+
+	max_key = max(dic, key=dic.get)
+	max_value = dic[max_key]
+
+	for word in dic:
+		dic[word] = dic[word] / max_value
+
+
+	dic_sen = {}
+	value = 0
+	for sen in d:
+		for k,v in dic.items():
+			value =  value + (v * str(sen).count(k))
+
+		dic_sen[sen] = value
+		value = 0
+
+
+	sorted_list = sorted(dic_sen.items(), key = lambda kv: kv[1]) ## sort from low to high
+	sorted_dic = collections.OrderedDict(sorted_list) ## convert to dic
+	sorted_list = list(sorted_dic.keys())
+	sorted_list.reverse()
+
+
+	string = ''
+	for s in sorted_list:
+		string = string + str(s)
+
+	return string
+
 			
 
     	
@@ -291,29 +336,7 @@ texts.append(text1)
 texts.append(text2)
 texts.append(text3)
 
-
-d = ss(texts)
-
-
-lis = []
-for text in d:
-	tok = [token.text for token in text if not token.is_stop and token.is_alpha] ## remove all but the good stuff
-	lis.extend(tok)
+string = summary(texts)
 
 
-dic = {}
-
-for word in lis:
-	count = lis.count(word)
-	dic[word] = count
-
-max_key = max(dic, key=dic.get)
-max_value = dic[max_key]
-
-for word in dic:
-	dic[word] = dic[word] / max_value
-
-
-
-
-print(dic)
+print(string)
