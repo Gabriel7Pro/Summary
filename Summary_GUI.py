@@ -3,7 +3,8 @@ from kivy.core.window import Window
 from ss import summary
 import os
 
-class WindowFile(App):
+
+class Drop_window(Screen):
     def build(self):
         Window.bind(on_dropfile=self._on_file_drop)
         return
@@ -13,8 +14,6 @@ class WindowFile(App):
         window.close()
         Get_all_text(file_path)
         return
-
-
 
 def Get_all_text(directory):
     texts = []
@@ -26,7 +25,8 @@ def Get_all_text(directory):
             texts.append(f.read())
         except Exception as e:
             pass
+            
     summary(texts)
 
 if __name__ == '__main__':
-    WindowFile().run()
+    Drop_window().run()
