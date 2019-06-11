@@ -1,86 +1,107 @@
 # coding: utf8
+
+### imports
 import spacy
 import collections
 from operator import itemgetter
 import sys
 import os
+### language config
 nlp = spacy.load('en')
 
-def ss(texts):
-	dic = {}
+### algorithm class
+class Algo_NLP(object):
+	"""docstring for Algo_NLP"""
+	def __init__(self, subject, texts):
+		self.subject = subject
+		self.texts = texts
+		
+	"""
+	in: all the texts
+	out: all the importent Sentences
+	"""
+	def Importent_Sentences(self):
+		dic = {}
 
-	for te in texts:
-		ts = texts
-		ts.remove(te)
+		texts = [nlp(text) for text in self.texts]
 
-		for sent in te.sents: ## Sentences in the main text
+		for te in self.texts: ### loop on all the texts
+			ts = self.texts ### main text
+			ts.remove(te)
 
-			Sum_high = []
-			for text in ts: ## for all texts
-				a = sorted(text.sents, key = lambda x: sent.similarity(x), reverse = True)
+			for sent in te.sents: ## Loop on Sentences in the main text
 
-				Sum_high.append(sent.similarity(a[0])) ## Add the Highest Sim
+				Sum_high = []
+				for text in ts: ## for all texts
+					a = sorted(text.sents, key = lambda x: sent.similarity(x), reverse = True) ## sorting all the Sentences in the texts by similarity
 
-			dic[sent] = (sum(Sum_high) / len(Sum_high))
+					Sum_high.append(sent.similarity(a[0])) ## Add the Highest similarity
 
-	sorted_list = sorted(dic.items(), key = lambda kv: kv[1]) ## sort from high to low
-	sorted_dic = collections.OrderedDict(sorted_list) ## convert to dic
+				dic[sent] = (sum(Sum_high) / len(Sum_high))
 
-	lis = []
-	
-	for k, v in sorted_dic.items(): ## filtering all the bad
-		if v > 0.86:
-			lis.append(k)
+		sorted_list = sorted(dic.items(), key = lambda kv: kv[1]) ## sort from high to low
+		sorted_dic = collections.OrderedDict(sorted_list) ## convert to dic
 
-	lis.reverse()
+		lis = []
+		
+		for k, v in sorted_dic.items(): ## filtering all the bad
+			if v > 0.88:
+				lis.append(k)
 
-	for v in lis: ## taking just the highest sims
-		for v2 in lis:
-			if v.similarity(v2) > 0.85 and lis.index(v) < lis.index(v2):
-				lis.remove(v2)
+		lis.reverse()
 
-	return lis ## return list of the importent sen
+		for v in lis: ## taking just the highest similaritys
+			for v2 in lis:
+				if v.similarity(v2) > 0.85 and lis.index(v) < lis.index(v2):
+					lis.remove(v2)
 
-def summary(texts):
-	texts = [nlp(text) for text in texts]
-	most_importent_sents = ss(texts)
-
-	lis = []
-	for text in most_importent_sents:
-		tok = [token.text for token in text if not token.is_stop and token.is_alpha] ## remove all but the good stuff
-		lis.extend(tok)
-
-	dic = {}
-
-	for word in lis:
-		count = lis.count(word)
-		dic[word] = count
-
-	max_key = max(dic, key=dic.get)
-	max_value = dic[max_key]
-
-	for word in dic:
-		dic[word] = dic[word] / max_value
+		return lis ## return list of the importent sen
 
 
-	dic_sen = {}
-	value = 0
-	for sen in most_importent_sents:
-		for k,v in dic.items():
-			value =  value + (v * str(sen).count(k))
+	"""
+	In: importent Sentences
+	Out: a summary of all the Sentences
+	"""
+	def summary(self):
+		texts = [nlp(text) for text in self.texts]
+		most_importent_sents = Importent_Senteces(texts)
 
-		dic_sen[sen] = value
+		lis = []
+		for text in most_importent_sents:
+			tok = [token.text for token in text if not token.is_stop and token.is_alpha] ## remove all but the good stuff
+			lis.extend(tok)
+
+		dic = {}
+
+		for word in lis:
+			count = lis.count(word)
+			dic[word] = count
+
+		max_key = max(dic, key=dic.get)
+		max_value = dic[max_key]
+
+		for word in dic:
+			dic[word] = dic[word] / max_value
+
+
+		dic_sen = {}
 		value = 0
+		for sen in most_importent_sents:
+			for k,v in dic.items():
+				value =  value + (v * str(sen).count(k))
+
+			dic_sen[sen] = value
+			value = 0
 
 
-	sorted_list = sorted(dic_sen.items(), key = lambda kv: kv[1]) ## sort from low to high
-	sorted_dic = collections.OrderedDict(sorted_list) ## convert to dic
-	sorted_list = list(sorted_dic.keys())
-	sorted_list.reverse()
+		sorted_list = sorted(dic_sen.items(), key = lambda kv: kv[1]) ## sort from low to high
+		sorted_dic = collections.OrderedDict(sorted_list) ## convert to dic
+		sorted_list = list(sorted_dic.keys())
+		sorted_list.reverse()
 
 
-	string = ''
-	for s in sorted_list:
-		string = string + str(s)
+		string = ''
+		for s in sorted_list:
+			string = string + str(s)
 
-	print(string)
+		return string
